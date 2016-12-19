@@ -149,18 +149,19 @@ class Py3oReport(models.TransientModel):
         self._extend_parser_context(context_instance, report_xml)
         return context_instance.localcontext
 
-    @api.multi
-    def _postprocess_report(self, content, res_id, save_in_attachment):
-        if save_in_attachment.get(res_id):
-            attachment = {
-                'name': save_in_attachment.get(res_id),
-                'datas': base64.encodestring(content),
-                'datas_fname': save_in_attachment.get(res_id),
-                'res_model': save_in_attachment.get('model'),
-                'res_id': res_id,
-            }
-            return self.env['ir.attachment'].create(attachment)
-        return False
+    @api.model
+    def _get_report_from_name(self, report_name):
+        """Get the first record of ir.actions.report.xml having the ``report_name`` as value for
+        the field report_name.
+        """
+        res = super(Py3oReport, self)._get_report_from_name(report_name)
+        if res:
+            return res
+        # maybe a py3o reprot
+        report_obj = self.env['ir.actions.report.xml']
+        return report_obj.search(
+            [('report_type', '=', 'py3o'),
+             ('report_name', '=', report_name)])
 
     @api.multi
     def _create_single_report(self, model_instance, data, save_in_attachment):
