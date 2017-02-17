@@ -83,13 +83,24 @@ class IrActionsReportXml(models.Model):
     report_type = fields.Selection(selection_add=[('py3o', "Py3o")])
 
     @api.model
+    def get_from_report_name(self, report_name, report_type):
+        return self.search(
+            [("report_name", "=", report_name),
+             ("report_type", "=", report_type)])
+
+    @api.model
     def render_report(self, res_ids, name, data):
-        action_py3o_report = self.search(
-            [("report_name", "=", name),
-             ("report_type", "=", "py3o")])
+        action_py3o_report = self.get_from_report_name(name, "py3o")
         if action_py3o_report:
             return self.env['py3o.report'].create({
                 'ir_actions_report_xml_id': action_py3o_report.id
             }).create_report(res_ids, data)
         return super(IrActionsReportXml, self).render_report(
             res_ids, name, data)
+
+    @api.multi
+    def gen_report_download_filename(self, res_ids, data):
+        """Override this function to change the name of the downloaded report
+        """
+        self.ensure_one()
+        return "%s.%s" % (self.name, self.py3o_filetype)

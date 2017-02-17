@@ -21,6 +21,7 @@
         'views/py3o_template.xml',
         'views/py3o_server.xml',
         'views/ir_report.xml',
+        'views/report_py3o.xml',
         'demo/report_py3o.xml',
     ],
     'installable': True,
