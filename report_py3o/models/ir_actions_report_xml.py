@@ -90,6 +90,6 @@ class IrActionsReportXml(models.Model):
         if action_py3o_report:
             return self.env['py3o.report'].create({
                 'ir_actions_report_xml_id': action_py3o_report.id
-            }).create_report(res_ids, data)
+            }).with_context(report_name=name).create_report(res_ids, data)
         return super(IrActionsReportXml, self).render_report(
             res_ids, name, data)
