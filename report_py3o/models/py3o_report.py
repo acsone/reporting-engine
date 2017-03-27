@@ -207,27 +207,6 @@ class Py3oReport(models.TransientModel):
         self._extend_parser_context(context_instance, report_xml)
         return context_instance.localcontext
 
-    @api.model
-    def _postprocess_report(self, report_path, res_id, save_in_attachment):
-        if save_in_attachment.get(res_id):
-            with open(report_path, 'rb') as pdfreport:
-                attachment = {
-                    'name': save_in_attachment.get(res_id),
-                    'datas': base64.encodestring(pdfreport.read()),
-                    'datas_fname': save_in_attachment.get(res_id),
-                    'res_model': save_in_attachment.get('model'),
-                    'res_id': res_id,
-                }
-                try:
-                    self.env['ir.attachment'].create(attachment)
-                except AccessError:
-                    logger.info("Cannot save PDF report %r as attachment",
-                                attachment['name'])
-                else:
-                    logger.info(
-                        'The PDF document %s is now saved in the database',
-                        attachment['name'])
-
     @api.multi
     def _create_single_report(self, model_instance, data, save_in_attachment):
         """ This function to generate our py3o report
