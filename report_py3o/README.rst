@@ -8,117 +8,34 @@ Report Py3o
 
 The py3o reporting engine is a reporting engine for Odoo based on `Libreoffice <http://www.libreoffice.org/>`_:
 
-* the report is created with Libreoffice (ODT or ODS files) or any other software that generate files in `OpenDocument <https://en.wikipedia.org/wiki/OpenDocument>`_ format,
+* the report is created with Libreoffice (ODT or ODS),
 * the report is stored on the server in OpenDocument format (.odt or .ods file)
 * the report is sent to the user in OpenDocument format or in any output format supported by Libreoffice (PDF, HTML, DOC, DOCX, Docbook, XLS, etc.)
 
-The key advantages of a Libreoffice-based reporting engine are:
+The key advantages of a Libreoffice based reporting engine are:
 
-* no need to be a developper to create or modify a report: the report is created and modified with Libreoffice. So this reporting engine has a fully WYSIWYG report developpment tool!
-
-* For a PDF report in A4/Letter format, it's easier to develop it with a tool such as Libreoffice that is designed to create A4/Letter documents than to develop it in HTML/CSS.
-
+* no need to be a developer to create or modify a report: the report is created and modified with Libreoffice. So this reporting engine has a full WYSIWYG report development tool!
+* For a PDF report in A4/Letter format, it's easier to develop it with a tool such as Libreoffice that is designed to create A4/Letter documents than to develop it in HTML/CSS, also some print peculiarities (backgrounds, margin boxes) are not very well supported by the HTML/CSS based solutions.
 * If you want your users to be able to modify the document after its generation by Odoo, just configure the document with ODT output (or DOC or DOCX) and the user will be able to modify the document with Libreoffice (or Word) after its generation by Odoo.
-
 * Easy development of spreadsheet reports in ODS format (XLS output possible).
 
-This reporting engine is an alternative to `Aeroo <https://github.com/aeroo/aeroo_reports>`_: these 2 reporting engines have similar features but their codes are completely different.
+This reporting engine is an alternative to `Aeroo <https://github.com/aeroo/aeroo_reports>`_: these two reporting engines have similar features but their implementation is entirely different. You cannot use aeroo templates as drop in replacement though, you'll have to change a few details.
 
 Installation
 ============
 
-You must install 2 additionnal python libs:
+Install the required python libs:
 
 .. code::
 
   pip install py3o.template
   pip install py3o.formats
 
-To allow the conversion of ODT or ODS reports to other formats (PDF, DOC, DOCX, etc.), you must install several additionnal components and Python libs:
-
-* `Py3o Fusion server <https://bitbucket.org/faide/py3o.fusion>`_,
-* `Py3o render server <https://bitbucket.org/faide/py3o.renderserver>`_,
-* a Java Runtime Environment (JRE), which can be OpenJDK,
-* Libreoffice started in the background in headless mode,
-* the Java driver for Libreoffice (Juno).
-
-It is also possible to use the Python driver for Libreoffice (PyUNO), but it is recommended to use the Java driver because it is more stable.
-
-The installation procedure below uses the Java driver. It has been successfully tested on Ubuntu 16.04 LTS ; if you use another OS, you may have to change a few details.
-
-Installation of py3o.fusion:
+To allow the conversion of ODT or ODS reports to other formats (PDF, DOC, DOCX, etc.), install libreoffice:
 
 .. code::
 
-  pip install py3o.fusion
-  pip install service-identity
-
-Installation of py3o.renderserver:
-
-.. code::
-
-  pip install py3o.renderserver
-
-Installation of Libreoffice and JRE on Debian/Ubuntu:
-
-.. code::
-
-  sudo apt-get install default-jre ure libreoffice-java-common libreoffice-writer
-
-At the end, with the dependencies, you should have 6 py3o python libs:
-
-.. code::
-
-  % pip freeze | grep py3o
-  py3o.formats==0.3
-  py3o.fusion==0.8.6.dev1
-  py3o.renderclient==0.2
-  py3o.renderers.juno==0.7
-  py3o.renderserver==0.5.1.dev1
-  py3o.template==0.9.10.dev1
-  py3o.types==0.1.1
-
-Start the Py3o Fusion server:
-
-.. code::
-
-  start-py3o-fusion --debug -s localhost
-
-Start the Py3o render server:
-
-.. code::
-
-  start-py3o-renderserver --java=/usr/lib/jvm/default-java/jre/lib/amd64/server/libjvm.so --ure=/usr/lib --office=/usr/lib/libreoffice --driver=juno --sofficeport=8997
-
-On the output of the Py3o render server, the first line looks like:
-
-.. code::
-
-  DEBUG:root:Starting JVM: /usr/lib/jvm/java-8-openjdk-amd64/jre/lib/amd64/server/libjvm.so with options: -Djava.class.path=/usr/local/lib/python2.7/dist-packages/py3o/renderers/juno/py3oconverter.jar:/usr/lib/ure/share/java/juh.jar:/usr/lib/ure/share/java/jurt.jar:/usr/lib/ure/share/java/ridl.jar:/usr/lib/ure/share/java/unoloader.jar:/usr/lib/ure/share/java/java_uno.jar:/usr/lib/libreoffice/program/classes/unoil.jar -Xmx150M
-
-After **-Djava.class.path**, there is a list of Java libs with *.jar* extension ; check that each JAR file is really present on your filesystem. On Ubuntu 16.04 LTS, the package *ure* installs several libs in another directory:
-
-* /usr/lib/ure/share/java/juh.jar is located in /usr/share/java/juh.jar
-* /usr/lib/ure/share/java/jurt.jar is located in /usr/share/java/jurt.jar
-* /usr/lib/ure/share/java/ridl.jar is located in /usr/share/java/ridl.jar
-* /usr/lib/ure/share/java/unoloader.jar is located in /usr/share/java/unoloader.jar
-* /usr/lib/ure/share/java/java_uno.jar is located in /usr/share/java/java_uno.jar
-
-To work around this problem, you can create a symlink:
-
-.. code::
-
-  sudo ln -s /usr /ure
-
-and then use **--ure=/** instead of **--ure=/usr/lib** in the command line of *start-py3o-renderserver*.
-
-Start Libreoffice in headless mode:
-
-.. code::
-
-  libreoffice --nologo --norestore --invisible --headless --nocrashreport --nofirststartwizard --nodefault --accept="socket,host=localhost,port=8997;urp;"
-
-To check that the Py3o Fusion server is running fine, visit the URL http://<IP_address>:8765/form. On this web page, under the section *Target format*, make sure that you have a line *This server currently supports these formats: ods, odt, docx, doc, html, docbook, pdf, xls.*.
+  apt-get --no-install-recommends install libreoffice
 
 Configuration
 =============
@@ -131,9 +48,6 @@ For example, to replace the native invoice report by a custom py3o report, add t
   <odoo>
 
   <record id="account.account_invoices" model="ir.actions.report.xml">
-      <field name="name">Invoice</field>
-      <field name="model">account.invoice</field>
-      <field name="report_name">account.report_invoice</field>
       <field name="report_type">py3o</field>
       <field name="py3o_filetype">odt</field>
       <field name="module">my_custom_module_base</field>
@@ -144,6 +58,35 @@ For example, to replace the native invoice report by a custom py3o report, add t
 
 where *my_custom_module_base* is the name of the custom Odoo module. In this example, the invoice ODT file is located in *my_custom_module_base/report/account_invoice.odt*.
 
+It's also possible to reference a template located in a trusted path of your
+Odoo server. In this case you must let the *module* entry empty and specify
+the path to the template as *py3o_template_fallback*.
+
+.. code::
+
+  <?xml version="1.0" encoding="utf-8"?>
+  <odoo>
+
+  <record id="account.account_invoices" model="ir.actions.report.xml">
+      <field name="report_type">py3o</field>
+      <field name="py3o_filetype">odt</field>
+      <field name="py3o_template_fallback">/odoo/templates/py3o/report/account_invoice.odt</field>
+  </record>
+
+  </odoo>
+
+Moreover you must also modify the odoo server configuration file to declare
+the allowed root directory for your py3o templates. Only templates located
+into this directory can be loaded by py3o report.
+
+.. code::
+
+  [options]
+  ...
+
+  [report_py3o]
+  root_tmpl_path=/odoo/templates/py3o
+
 If you want an invoice in PDF format instead of ODT format, the XML file should look like:
 
 .. code::
@@ -151,23 +94,47 @@ If you want an invoice in PDF format instead of ODT format, the XML file should 
   <?xml version="1.0" encoding="utf-8"?>
   <odoo>
 
-  <record id="local_py3o_server" model="py3o.server">
-      <field name="url">http://localhost:8765/form</field>
-  </record>
-
   <record id="account.account_invoices" model="ir.actions.report.xml">
-      <field name="name">Invoice</field>
-      <field name="model">account.invoice</field>
-      <field name="report_name">account.report_invoice</field>
       <field name="report_type">py3o</field>
       <field name="py3o_filetype">pdf</field>
-      <field name="py3o_server_id" ref="local_py3o_server"/>
       <field name="module">my_custom_module_base</field>
       <field name="py3o_template_fallback">report/account_invoice.odt</field>
   </record>
 
   </odoo>
 
+If you want to add a new py3o PDF report (and not replace a native report), the XML file should look like this:
+
+.. code::
+
+  <?xml version="1.0" encoding="utf-8"?>
+  <odoo>
+
+  <record id="partner_summary_report" model="ir.actions.report.xml">
+      <field name="name">Partner Summary</field>
+      <field name="model">res.partner</field>
+      <field name="report_name">res.partner.summary</field>
+      <field name="report_type">py3o</field>
+      <field name="py3o_filetype">pdf</field>
+      <field name="module">my_custom_module_base</field>
+      <field name="py3o_template_fallback">report/partner_summary.odt</field>
+  </record>
+
+  <!-- Add entry in "Print" drop-down list -->
+  <record id="button_partner_summary_report" model="ir.values">
+      <field name="key2">client_print_multi</field>
+      <field name="model">res.partner</field>
+      <field name="name">Partner Summary</field>
+      <field name="value" eval="'ir.actions.report.xml,%d'%partner_summary_report" />
+  </record>
+
+  </odoo>
+
+Configuration parameters
+------------------------
+
+py3o.conversion_command
+    The command to be used to run the conversion, ``libreoffice`` by default. If you change this, whatever you set here must accept the parameters ``--headless --convert-to $ext $file`` and put the resulting file into ``$file``'s directory with extension ``$ext``. The command will be started in ``$file``'s directory.
 
 Usage
 =====
@@ -176,10 +143,32 @@ Usage
    :alt: Try me on Runbot
    :target: https://runbot.odoo-community.org/runbot/143/9.0
 
+The templating language is `extensively documented <http://py3otemplate.readthedocs.io/en/latest/templating.html>`_, the records are exposed in libreoffice as ``objects``, on which you can also call functions.
+
+Available functions and objects
+-------------------------------
+
+user
+    Browse record of current user
+lang
+    The user's company's language as string (ISO code)
+b64decode
+    ``base64.b64decode``
+format_multiline_value(string)
+    Generate the ODF equivalent of ``<br/>`` and ``&nbsp;`` for multiline fields (ODF is XML internally, so those would be skipped otherwise)
+html_sanitize(string)
+    Sanitize HTML string
+time
+    Python's ``time`` module
+display_address(partner)
+    Return a formatted string of the partner's address
+
 Known issues / Roadmap
 ======================
 
 * generate barcode ?
+* add more detailed example in demo file to showcase features
+* add migration guide aeroo -> py3o
 
 Bug Tracker
 ===========
@@ -196,7 +185,12 @@ Contributors
 ------------
 
 * Florent Aide (`XCG Consulting <http://odoo.consulting/>`_)
-* Laurent Mignon (Acsone)
+* Laurent Mignon <laurent.mignon@acsone.eu>,
+* Alexis de Lattre <alexis.delattre@akretion.com>,
+* Guewen Baconnier <guewen.baconnier@camptocamp.com>
+* Omar Castiñeira <omar@comunitea.com>
+* Holger Brunn <hbrunn@therp.nl>
+
 
 Maintainer
 ----------
