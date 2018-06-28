@@ -5,13 +5,14 @@
 import mock
 import os
 import pkg_resources
+import tempfile
 
 from py3o.formats import Formats
 
 from openerp.tests.common import TransactionCase
 from openerp.exceptions import ValidationError
 
-from ..py3o_parser import TemplateNotFound
+from ..models.py3o_report import TemplateNotFound
 from base64 import b64encode
 
 
@@ -56,14 +57,21 @@ class TestReportPy3o(TransactionCase):
             "Field 'Output Format' is required for Py3O report")
 
     def test_reports(self):
+        py3o_report = self.env['py3o.report']
         report = self.env.ref("report_py3o.res_users_report_py3o")
-        with mock.patch('openerp.addons.report_py3o.py3o_parser.'
-                        'Py3oParser.create_single_pdf') as patched_pdf:
+        with mock.patch.object(
+                py3o_report.__class__, '_create_single_report') as patched_pdf:
+            result = tempfile.mktemp('.txt')
+            with open(result, 'w') as fp:
+                fp.write('dummy')
+            patched_pdf.return_value = result
             # test the call the the create method inside our custom parser
             report.render_report(self.env.user.ids,
                                  report.report_name,
                                  {})
             self.assertEqual(1, patched_pdf.call_count)
+            # generated files no more exists
+            self.assertFalse(os.path.exists(result))
         res = report.render_report(
             self.env.user.ids, report.report_name, {})
         self.assertTrue(res)
@@ -78,7 +86,7 @@ class TestReportPy3o(TransactionCase):
             magick_response.iter_content.return_value = "test result"
             res = report.render_report(
                 self.env.user.ids, report.report_name, {})
-            self.assertEqual(('test result', '.pdf'), res)
+            self.assertEqual(('test result', 'pdf'), res)
 
     def test_report_template_configs(self):
         report = self.env.ref("report_py3o.res_users_report_py3o")
@@ -98,7 +106,7 @@ class TestReportPy3o(TransactionCase):
             report.render_report(
                 self.env.user.ids, report.report_name, {})
 
-        # the template can also be provivided as an abspaath
+        # the template can also be provided as an abspaath
         report.py3o_template_fallback = flbk_filename
         res = report.render_report(
             self.env.user.ids, report.report_name, {})
