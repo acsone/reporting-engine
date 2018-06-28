@@ -29,19 +29,6 @@ class IrActionsReportXml(models.Model):
             raise ValidationError(_(
                 "Field 'Output Format' is required for Py3O report"))
 
-    @api.one
-    @api.constrains("py3o_is_local_fusion", "py3o_server_id",
-                    "py3o_filetype")
-    def _check_py3o_server_id(self):
-        if self.report_type != "py3o":
-            return
-        is_native = Formats().get_format(self.py3o_filetype).native
-        if ((not is_native or not self.py3o_is_local_fusion) and
-                not self.py3o_server_id):
-            raise ValidationError(_(
-                "Can not use not native format in local fusion. "
-                "Please specify a Fusion Server"))
-
     @api.model
     def _get_py3o_filetypes(self):
         formats = Formats()
@@ -60,15 +47,6 @@ class IrActionsReportXml(models.Model):
     py3o_template_id = fields.Many2one(
         'py3o.template',
         "Template")
-    py3o_is_local_fusion = fields.Boolean(
-        "Local Fusion",
-        help="Native formats will be processed without a server. "
-             "You must use this mode if you call methods on your model into "
-             "the template.",
-        default=True)
-    py3o_server_id = fields.Many2one(
-        "py3o.server",
-        "Fusion Server")
     module = fields.Char(
         "Module",
         help="The implementer module that provides this report")
