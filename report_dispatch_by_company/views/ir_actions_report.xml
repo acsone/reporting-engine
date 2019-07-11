@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2019 ACSONE SA/NV
+     License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl). -->
+
+<odoo>
+
+    <record model="ir.ui.view" id="ir_actions_report_form_view">
+        <field name="name">ir.actions.report.form (in
+            report_dispatch_by_company)
+        </field>
+        <field name="model">ir.actions.report</field>
+        <field name="inherit_id" ref="base.act_report_xml_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='model']"
+                   position="after">
+                <field name="is_company_id_a_substitution_criteria" invisble="1"/>
+            </xpath>
+            <xpath expr="//field[@name='substitution_action_report_id']"
+                   position="before">
+                <field name="company_id"
+                       attrs="{'column_invisible': [('parent.is_company_id_a_substitution_criteria','=',False)]}"/>
+            </xpath>
+        </field>
+    </record>
+
+
+</odoo>
