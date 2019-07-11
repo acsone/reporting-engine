@@ -13,7 +13,7 @@
         <field name="arch" type="xml">
             <xpath expr="//field[@name='model']"
                    position="after">
-                <field name="is_company_id_a_substitution_criteria" invisble="1"/>
+                <field name="is_company_id_a_substitution_criteria" invisible="1"/>
             </xpath>
             <xpath expr="//field[@name='substitution_action_report_id']"
                    position="before">

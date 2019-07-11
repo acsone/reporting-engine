@@ -19,7 +19,7 @@ class IrActionReport(models.Model):
                 model = self.env[self.model]
                 criteria = self.env[
                     'ir.actions.report.dispatch.criteria'
-                ].search([('field_name', '=', 'is_company')])
+                ].search([('field_name', '=', 'company_id')])
                 if criteria:
                     rec.is_company_id_a_substitution_criteria = \
                         criteria._check_criteria_in_model(model)
