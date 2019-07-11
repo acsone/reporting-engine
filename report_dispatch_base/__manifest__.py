@@ -6,15 +6,12 @@
     'summary': """
         This addon give the possibility to dispatch one action report to 
         different reports based on some criteria.
-        We consider one basic criteria which is the company to be able to 
-        configure different report for the same object in each company.
-        This module can be inherited to add new criteria.
         """,
     'version': '12.0.1.0.0',
     'license': 'AGPL-3',
     'author': 'ACSONE SA/NV,'
               'Odoo Community Association (OCA)',
-    'website': 'https://github.com/OCA/multi-company',
+    'website': 'https://github.com/acsone/reporting-engine',
     'depends': ['base'],
     'data': [
         'security/ir_actions_report_dispatch_criteria.xml',
