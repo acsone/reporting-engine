@@ -29,15 +29,15 @@ class IrActionsReportDispatchCriteria(models.Model):
     @api.multi
     def _check_criteria_in_model(self, model):
         self.ensure_one()
-        if (
-            self.field_name in model._fields
-            and model._fields[self.field_name].ttype == self.ttype
-        ):
-            if (
-                self.ttype in ('many2one', 'many2many', 'one2many')
-                and model._fields.model != self.model
-            ):
-                return False
+        field = self.env['ir.model.fields'].search(
+            [
+                ('name', '=', self.field_name),
+                ('ttype', '=', self.ttype),
+                ('model_id.model', '=', model._name),
+                ('relation', '=', self.model),
+            ]
+        )
+        if field:
             return True
         return False
 
