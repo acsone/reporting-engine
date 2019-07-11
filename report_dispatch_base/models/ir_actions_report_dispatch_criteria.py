@@ -24,7 +24,7 @@ class IrActionsReportDispatchCriteria(models.Model):
 
     @api.model
     def _get_criteria_list(self):
-        return self._get_criteria_fields()
+        return self.search([])
 
     @api.multi
     def _check_criteria_in_model(self, model):
