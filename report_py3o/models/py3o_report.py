@@ -2,21 +2,18 @@
 # Copyright 2013 XCG Consulting (http://odoo.consulting)
 # Copyright 2016 ACSONE SA/NV
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl)
-import base64
 from base64 import b64decode
 from cStringIO import StringIO
-import json
 import logging
 import os
 from contextlib import closing
+import subprocess
 
 import pkg_resources
-import requests
 import sys
 import tempfile
 from zipfile import ZipFile, ZIP_DEFLATED
 
-from openerp.exceptions import AccessError
 from openerp.exceptions import UserError
 from openerp.report.report_sxw import rml_parse
 from openerp import api, fields, models, _
@@ -24,7 +21,6 @@ from openerp import api, fields, models, _
 logger = logging.getLogger(__name__)
 
 try:
-    from py3o.template.helpers import Py3oConvertor
     from py3o.template import Template
     from py3o import formats
 except ImportError:
@@ -189,57 +185,61 @@ class Py3oReport(models.TransientModel):
         """ This function to generate our py3o report
         """
         self.ensure_one()
-        report_xml = self.ir_actions_report_xml_id
-        filetype = report_xml.py3o_filetype
         result_fd, result_path = tempfile.mkstemp(
-            suffix='.' + filetype, prefix='p3o.report.tmp.')
+            suffix='.ods', prefix='p3o.report.tmp.')
         tmpl_data = self.get_template(model_instance)
 
         in_stream = StringIO(tmpl_data)
         with closing(os.fdopen(result_fd, 'w+')) as out_stream:
             template = Template(in_stream, out_stream, escape_false=True)
             localcontext = self._get_parser_context(model_instance, data)
-            is_native = Formats().get_format(filetype).native
-            if report_xml.py3o_is_local_fusion:
-                template.render(localcontext)
-                out_stream.seek(0)
-                in_stream = out_stream.read()
-                datadict = {}
-            else:
-                expressions = template.get_all_user_python_expression()
-                py_expression = template.convert_py3o_to_python_ast(
-                    expressions)
-                convertor = Py3oConvertor()
-                data_struct = convertor(py_expression)
-                datadict = data_struct.render(localcontext)
+            template.render(localcontext)
+            out_stream.seek(0)
+            tmpl_data = out_stream.read()
 
-        if not is_native or not report_xml.py3o_is_local_fusion:
-            # Call py3o.server to render the template in the desired format
-            files = {
-                'tmpl_file': in_stream,
-            }
-            fields = {
-                "targetformat": filetype,
-                "datadict": json.dumps(datadict),
-                "image_mapping": "{}",
-            }
-            if report_xml.py3o_is_local_fusion:
-                fields['skipfusion'] = '1'
-            r = requests.post(
-                report_xml.py3o_server_id.url, data=fields, files=files)
-            if r.status_code != 200:
-                # server says we have an issue... let's tell that to enduser
-                raise UserError(
-                    _('Fusion server error %s') % r.text,
-                )
+        result_path = self._convert_single_report(
+            result_path, model_instance, data
+        )
 
-            chunk_size = 1024
-            with open(result_path, 'w+') as fd:
-                for chunk in r.iter_content(chunk_size):
-                    fd.write(chunk)
-        self._postprocess_report(
-            result_path, model_instance.id, save_in_attachment)
+        if len(model_instance) == 1:
+            self._postprocess_report(
+                result_path, model_instance.id, save_in_attachment)
         return result_path
+
+    @api.multi
+    def _convert_single_report(self, result_path, model_instance, data):
+        """Run a command to convert to our target format"""
+        filetype = self.ir_actions_report_xml_id.py3o_filetype
+        if not Formats().get_format(filetype).native:
+            command = self._convert_single_report_cmd(
+                result_path, model_instance, data,
+            )
+            logger.debug('Running command %s', command)
+            output = subprocess.check_output(
+                command, cwd=os.path.dirname(result_path),
+            )
+            logger.debug('Output was %s', output)
+            self._cleanup_tempfiles([result_path])
+            result_path, result_filename = os.path.split(result_path)
+            result_path = os.path.join(
+                result_path, '%s.%s' % (
+                    os.path.splitext(result_filename)[0], filetype
+                )
+            )
+        return result_path
+
+    @api.multi
+    def _convert_single_report_cmd(self, result_path, model_instance, data):
+        """Return a command list suitable for use in subprocess.call"""
+        return [
+            self.env['ir.config_parameter'].get_param(
+                'py3o.conversion_command', 'libreoffice',
+            ),
+            '--headless',
+            '--convert-to',
+            self.ir_actions_report_xml_id.py3o_filetype,
+            result_path,
+        ]
 
     @api.multi
     def _get_or_create_single_report(self, model_instance, data,
@@ -300,10 +300,17 @@ class Py3oReport(models.TransientModel):
         save_in_attachment = self._check_attachment_use(
             model_instances, self.ir_actions_report_xml_id) or {}
         reports_path = []
-        for model_instance in model_instances:
+        if (
+                len(res_ids) > 1 and
+                self.ir_actions_report_xml_id.py3o_multi_in_one):
             reports_path.append(
-                self._get_or_create_single_report(
-                    model_instance, data, save_in_attachment))
+                self._create_single_report(
+                    model_instances, data, save_in_attachment))
+        else:
+            for model_instance in model_instances:
+                reports_path.append(
+                    self._get_or_create_single_report(
+                        model_instance, data, save_in_attachment))
 
         result_path, filetype = self._merge_results(reports_path)
         reports_path.append(result_path)
