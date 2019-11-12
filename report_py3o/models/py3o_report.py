@@ -249,7 +249,11 @@ class Py3oReport(models.TransientModel):
                 'loaded_documents'].get(model_instance.id):
             d = save_in_attachment[
                 'loaded_documents'].get(model_instance.id)
-            return d, self.ir_actions_report_xml_id.py3o_filetype
+            temp_path = tempfile.mkdtemp()
+            file_path = os.path.join(temp_path, save_in_attachment[model_instance.id])
+            with open(file_path, "wb") as f:
+                f.write(d)
+            return file_path
         return self._create_single_report(
             model_instance, data, save_in_attachment)
 
