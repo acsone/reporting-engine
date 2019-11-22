@@ -3,11 +3,10 @@
      License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl). -->
 
 <odoo>
-<data>
 
     <record model="ir.ui.view" id="ir_actions_report_xml_form_view">
-        <field name="name">ir.actions.report.xml.form (in report_py3o_multilang)</field>
-        <field name="model">ir.actions.report.xml</field>
+        <field name="name">ir.actions.report.form (in report_py3o_multilang)</field>
+        <field name="model">ir.actions.report</field>
         <field name="inherit_id" ref="report_py3o.py3o_report_view"/>
         <field name="arch" type="xml">
             <field name="py3o_template_fallback" position="before">
@@ -19,8 +18,4 @@
         </field>
     </record>
 
-
-
-
-</data>
 </odoo>

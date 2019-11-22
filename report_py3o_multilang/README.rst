@@ -24,14 +24,6 @@ This module add two new fields on the report definition:
   e.g. "${object.partner_id.lang}.". The 'object' in the expression is on instance of the model on which the
   report applies.
 
-
-Usage
-=====
-
-To use this module, you need to:
-
-#. Go to ...
-
 .. image:: https://odoo-community.org/website/image/ir.attachment/5784_f2813bd/datas
    :alt: Try me on Runbot
    :target: https://runbot.odoo-community.org/runbot/143/10.0
