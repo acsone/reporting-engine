@@ -1,13 +1,12 @@
-# -*- coding: utf-8 -*-
 # Copyright 2017 ACSONE SA/NV
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 
-from odoo import api, fields, models, _
+from odoo import _, api, fields, models
 from odoo.exceptions import ValidationError
 
 
 class IrActionsReportXml(models.Model):
-    _inherit = "ir.actions.report.xml"
+    _inherit = "ir.actions.report"
 
     lang = fields.Char(
         "Language",
