@@ -67,7 +67,7 @@ class IrActionsReport(models.Model):
     )
     report_type = fields.Selection(
         selection_add=[("py3o", "Py3o")],
-        ondelete={'py3o': 'cascade'},
+        ondelete={"py3o": "cascade"},
     )
     py3o_multi_in_one = fields.Boolean(
         string="Multiple Records in a Single Report",
