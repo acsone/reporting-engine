@@ -158,7 +158,7 @@ class IrActionsReport(models.Model):
             [("report_name", "=", report_name), ("report_type", "=", report_type)]
         )
 
-    def render_py3o(self, res_ids, data):
+    def _render_py3o(self, res_ids, data):
         self.ensure_one()
         if self.report_type != "py3o":
             raise RuntimeError(
