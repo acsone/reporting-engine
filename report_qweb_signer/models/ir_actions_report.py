@@ -30,9 +30,13 @@ def _normalize_filepath(path):
 class IrActionsReport(models.Model):
     _inherit = "ir.actions.report"
 
+    def _check_valid_action_report(self):
+        return self.report_type != "qweb-pdf"
+
     def _certificate_get(self, res_ids):
         """Obtain the proper certificate for the report and the conditions."""
-        if self.report_type != "qweb-pdf":
+        valid = self._check_valid_action_report()
+        if not valid:
             return False
         certificates = self.env["report.certificate"].search(
             [
