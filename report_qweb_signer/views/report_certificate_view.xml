@@ -22,6 +22,7 @@ License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
                             <field name="path" />
                             <field name="password_file" />
                             <field name="model_id" />
+                            <field name="signing_method" />
                         </group>
                         <group>
                             <field name="domain" />
@@ -32,6 +33,13 @@ License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
                                 widget="selection"
                                 groups="base.group_multi_company"
                             />
+                        </group>
+                        <group
+                            attrs="{'invisible': [('signing_method', '=', 'endesive')]}"
+                        >
+                            <field name="endesive_certificate_mail" />
+                            <field name="endesive_ceritificate_location" />
+                            <field name="endesive_ceritificate_reason" />
                         </group>
                     </group>
                 </sheet>
