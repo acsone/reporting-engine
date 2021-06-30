@@ -52,3 +52,21 @@ class ReportCertificate(models.Model):
         required=True,
         default=_default_company,
     )
+    signing_method = fields.Selection(
+        selection=[("java", "Java"), ("endesive", "Endesive")],
+        default="java",
+        string="Signing Method",
+        required=True,
+    )
+    endesive_certificate_mail = fields.Char(
+        string="Mail address on certificate",
+        help="mail address saved on the endesive created mail. ",
+    )
+    endesive_ceritificate_location = fields.Char(
+        string="Location on certificate",
+        help="mail address saved on the endesive created mail. ",
+    )
+    endesive_ceritificate_reason = fields.Char(
+        string="Reason on certificate",
+        help="mail address saved on the endesive created mail. ",
+    )
