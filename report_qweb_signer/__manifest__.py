@@ -13,7 +13,6 @@
     "license": "AGPL-3",
     "installable": True,
     "depends": ["web_editor"],
-    "external_dependencies": {"bin": ["/usr/bin/java"]},
     "data": [
         "data/defaults.xml",
         "security/ir.model.access.csv",
