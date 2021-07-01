@@ -14,7 +14,6 @@
     "installable": True,
     "depends": ["web_editor"],
     "external_dependencies": {
-        "bin": ["/usr/bin/java"],
         "python": ["endesive", "cryptography"],
     },
     "data": [
