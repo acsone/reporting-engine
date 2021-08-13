@@ -43,6 +43,9 @@ class IrActionsReport(models.Model):
             [
                 ("company_id", "=", self.env.user.company_id.id),
                 ("model_id", "=", self.model),
+                "|",
+                ("action_report_ids", "=", False),
+                ("action_report_ids", "in", self.id),
             ]
         )
         if not certificates:
