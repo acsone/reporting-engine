@@ -9,14 +9,21 @@ logger = logging.getLogger(__name__)
 
 
 class Py3oReport(models.TransientModel):
-
     _inherit = "py3o.report"
 
     def get_template_for_lang(self, model_instance):
         self.ensure_one()
         report_xml = self.ir_actions_report_id
-        lang = self.env["mail.template"]._render_template(
-            report_xml.lang, report_xml.model, model_instance.id
+        lang = (
+            self.env["mail.template"]
+            ._render_template(report_xml.lang, report_xml.model, model_instance.ids)
+            .get(model_instance.id)
+        )
+        logger.info(lang)
+        logger.info(
+            self.env["mail.template"]._render_template(
+                report_xml.lang, report_xml.model, model_instance.ids
+            )
         )
         if lang:
             tmpl_path = report_xml.py3o_localized_template_fallback.format(lang=lang)
@@ -32,7 +39,7 @@ class Py3oReport(models.TransientModel):
                 logger.debug("Template not found at %s", tmpl_path)
             if tmpl_file:
                 return tmpl_file
-        return super(Py3oReport, self)._get_template_fallback(model_instance)
+        return super()._get_template_fallback(model_instance)
 
     def _get_template_fallback(self, model_instance):
         """
@@ -43,4 +50,4 @@ class Py3oReport(models.TransientModel):
         report_xml = self.ir_actions_report_id
         if report_xml.lang:
             return self.get_template_for_lang(model_instance)
-        return super(Py3oReport, self)._get_template_fallback(model_instance)
+        return super()._get_template_fallback(model_instance)
