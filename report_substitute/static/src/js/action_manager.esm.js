@@ -21,7 +21,13 @@ registry
                 "get_substitution_report_action",
                 [action, active_ids]
             );
-            Object.assign(action, substitution);
+            const handlers = registry.category("ir.actions.report handlers").getAll();
+            for (const handler of handlers) {
+                const result = await handler(substitution, options, env);
+                if (result) {
+                    return result;
+                }
+            }
         }
         return Promise.resolve(false);
     });
