@@ -73,7 +73,6 @@ class Py3oParserContext:
             value,
             digits=digits,
             grouping=grouping,
-            monetary=monetary,
             dp=dp,
             currency_obj=currency_obj,
         )
